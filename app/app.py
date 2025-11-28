@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends
 from app.schemas import CreatePost, ResponsePost
-from app.database import Post, create_db_and_tables, create_async_engine
+from app.database import Post, create_db_and_tables, create_async_engine, get_async_session
 from sqlalchemy.ext.asyncio import AsyncSession
 from contextlib import asynccontextmanager
+from sqlalchemy import select
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -11,33 +12,40 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-@app.get("/test")
-def test():
-    return{"message": "test"}
+@app.post("/upload")
+async def upload_file(    
+    file: UploadFile = File(...),
+    caption: str = Form(""),
+    db: AsyncSession = Depends(get_async_session)
+    ):
+    post = Post(
+        caption = caption,
+        url = "test url",
+        file_type = "image",
+        file_name = "test name"
+    )
+    db.add(post)
+    await db.commit()
+    await db.refresh(post)
+    return post
 
+@app.get("/feed")
+async def get_feed(
+    db: AsyncSession = Depends(get_async_session)
+):
+    result = await db.execute(select(Post).order_by(Post.created_at.desc()))
+    posts = [row[0] for row in result.all()]
 
-text_post_db = {
-    1: {"title:": "Morning Vibes", "content:": "Starting the day with coffee and good energy."},
-    2: {"title:": "Throwback", "content:": "Missing those summer nights already."},
-    3: {"title:": "Daily Motivation", "content:": "Small steps every day lead to big changes."},
-    4: {"title:": "Food Mood", "content:": "Just tried a new pasta recipe and wow."},
-    5: {"title:": "Tech Moment", "content:": "Finally fixed that annoying bug today!"},
-    6: {"title:": "Random Thought", "content:": "Why does time go faster on weekends?"},
-    7: {"title:": "Music Share", "content:": "On repeat: my new favorite chill playlist."},
-    8: {"title:": "Workout Log", "content:": "Leg day… send help."},
-    9: {"title:": "Life Update", "content:": "Trying to balance work, life, and everything in between."},
-    10: {"title:": "Night Mood", "content:": "Nothing beats quiet late-night walks."}
-}
-
-
-@app.get("/posts/{id}")
-def get_posts(id: int):
-    if id not in text_post_db:
-        raise HTTPException(status_code=404, detail="Post not found")
-    return text_post_db.get(id)
-    
-@app.post("/posts")
-def create_post(post: CreatePost) -> ResponsePost:
-    new_post = {"title": post.title, "content": post.content}
-    text_post_db[max(text_post_db.keys()) + 1] = new_post
-    return new_post
+    posts_data = []
+    for post in posts:
+        posts_data.append(
+            {
+                "id": str(post.id),
+                "caption": post.caption,
+                "url": post.url,
+                "file_type": post.file_type,
+                "file_name": post.file_name,
+                "created_at": post.created_at.format()
+            }
+        )
+    return {"posts": posts_data}
