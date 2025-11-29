@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, File, UploadFile, Form, Depends
+from fastapi.responses import FileResponse
 from app.schemas import PostCreate, PostResponse, UserRead, UserCreate, UserUpdate
 from app.database import Post, create_db_and_tables, get_async_session, User
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +12,7 @@ import os
 import uuid
 import tempfile
 from app.users import auth_backend, current_active_user, fastapi_users
+from pathlib import Path
 
 
 @asynccontextmanager
@@ -19,6 +21,14 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+@app.get("/", include_in_schema=False)
+@app.get("/index.html", include_in_schema=False)
+async def serve_index() -> FileResponse:
+    return FileResponse(BASE_DIR / "index.html")
 
 app.include_router(fastapi_users.get_auth_router(auth_backend), prefix='/auth/jwt', tags=["auth"])
 app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/auth", tags=["auth"])

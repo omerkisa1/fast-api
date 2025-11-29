@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePhoto</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+        }
+        .container { max-width: 935px; margin: 0 auto; padding: 30px 20px; }
+        
+        .auth-container { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .auth-box { 
+            background: white; 
+            border: 1px solid #dbdbdb;
+            padding: 40px; 
+            border-radius: 3px;
+            max-width: 350px;
+            width: 100%;
+        }
+        .logo { 
+            text-align: center; 
+            font-size: 40px; 
+            font-family: 'Brush Script MT', cursive;
+            margin-bottom: 30px;
+            color: #262626;
+            font-weight: bold;
+        }
+        .form-group { margin-bottom: 8px; }
+        .form-group input { 
+            width: 100%; 
+            padding: 9px 8px;
+            border: 1px solid #dbdbdb; 
+            border-radius: 3px;
+            font-size: 12px;
+            background: #fafafa;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #a8a8a8;
+            background: white;
+        }
+        .btn { 
+            width: 100%; 
+            padding: 8px;
+            border: none; 
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer; 
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+        .btn-primary { 
+            background: #0095f6;
+            color: white;
+        }
+        .btn-primary:hover { background: #1877f2; }
+        .btn-secondary {
+            background: transparent;
+            color: #0095f6;
+            border: 1px solid #dbdbdb;
+        }
+        .btn-secondary:hover { background: #fafafa; }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #8e8e8e;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #dbdbdb;
+        }
+        .divider span { padding: 0 18px; }
+        
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #dbdbdb;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-content {
+            max-width: 935px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar .logo {
+            font-size: 28px;
+            margin: 0;
+        }
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: #262626;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px 16px;
+        }
+        .logout-btn:hover { color: #8e8e8e; }
+        
+        .upload-section { 
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .upload-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #262626;
+        }
+        textarea { 
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            background: #fafafa;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #a8a8a8;
+            background: white;
+        }
+        .file-input-wrapper {
+            position: relative;
+            margin-bottom: 12px;
+        }
+        .file-input-wrapper input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background: #fafafa;
+            border: 1px dashed #dbdbdb;
+            border-radius: 3px;
+            text-align: center;
+            color: #8e8e8e;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .file-input-label:hover {
+            background: #efefef;
+        }
+        
+        .feed { margin-top: 24px; }
+        .post { 
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+        .post-header { 
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #efefef;
+        }
+        .post-user { 
+            font-weight: 600;
+            color: #262626;
+            font-size: 14px;
+        }
+        .post-media { 
+            width: 100%;
+            display: block;
+            max-height: 600px;
+            object-fit: cover;
+        }
+        .post-caption { 
+            padding: 16px;
+            color: #262626;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .post-caption .username {
+            font-weight: 600;
+            margin-right: 6px;
+        }
+        .delete-btn { 
+            background: transparent;
+            color: #ed4956;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .delete-btn:hover {
+            color: #c13141;
+        }
+        .hidden { display: none !important; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8e8e8e;
+        }
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #262626;
+        }
+    </style>
+</head>
+<body>
+    <div id="authPage" class="auth-container">
+        <div class="auth-box">
+            <div class="logo">SharePhoto</div>
+            
+            <div id="loginForm">
+                <div class="form-group">
+                    <input type="email" id="loginEmail" placeholder="E-posta">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" placeholder="Şifre">
+                </div>
+                <button class="btn btn-primary" onclick="login()">Giriş Yap</button>
+                
+                <div class="divider"><span>VEYA</span></div>
+                
+                <button class="btn btn-secondary" onclick="showRegister()">Hesap Oluştur</button>
+            </div>
+            
+            <div id="registerForm" class="hidden">
+                <div class="form-group">
+                    <input type="email" id="regEmail" placeholder="E-posta">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="regPassword" placeholder="Şifre">
+                </div>
+                <button class="btn btn-primary" onclick="register()">Kaydol</button>
+                
+                <div class="divider"><span>VEYA</span></div>
+                
+                <button class="btn btn-secondary" onclick="showLogin()">Giriş Yap</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="appPage" class="hidden">
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="logo">SharePhoto</div>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="upload-section">
+                <h3>Yeni Gönderi Oluştur</h3>
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" accept="image/*,video/*" onchange="showFileName()">
+                    <label class="file-input-label" id="fileLabel">📷 Fotoğraf veya Video Seç</label>
+                </div>
+                <div class="form-group">
+                    <textarea id="caption" placeholder="Bir açıklama yazın..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="uploadFile()">Paylaş</button>
+            </div>
+
+            <div class="feed" id="feed"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:8000';
+        let token = localStorage.getItem('token');
+
+        window.onload = function() {
+            if (token) {
+                showApp();
+            } else {
+                showAuth();
+            }
+        };
+
+        function showAuth() {
+            document.getElementById('authPage').classList.remove('hidden');
+            document.getElementById('appPage').classList.add('hidden');
+        }
+
+        function showApp() {
+            document.getElementById('authPage').classList.add('hidden');
+            document.getElementById('appPage').classList.remove('hidden');
+            loadFeed();
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
+        function showFileName() {
+            const fileInput = document.getElementById('fileInput');
+            const label = document.getElementById('fileLabel');
+            if (fileInput.files.length > 0) {
+                label.textContent = '✓ ' + fileInput.files[0].name;
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!email || !password) {
+                alert('Lütfen tüm alanları doldurun!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (response.ok) {
+                    alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+                    showLogin();
+                    document.getElementById('regEmail').value = '';
+                    document.getElementById('regPassword').value = '';
+                } else {
+                    const error = await response.json();
+                    alert('Kayıt başarısız: ' + (error.detail || 'Bilinmeyen hata'));
+                }
+            } catch (error) {
+                alert('Bağlantı hatası! Sunucu çalışıyor mu?');
+            }
+        }
+
+        async function login() {
+            const username = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('Lütfen tüm alanları doldurun!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+
+            try {
+                const response = await fetch(`${API_URL}/auth/jwt/login`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.access_token;
+                    localStorage.setItem('token', token);
+                    showApp();
+                } else {
+                    alert('Giriş başarısız! E-posta veya şifre yanlış.');
+                }
+            } catch (error) {
+                alert('Bağlantı hatası! Sunucu çalışıyor mu?');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            token = null;
+            showAuth();
+            document.getElementById('feed').innerHTML = '';
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const caption = document.getElementById('caption').value;
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Lütfen bir dosya seçin!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('caption', caption);
+
+            try {
+                const response = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    alert('Paylaşıldı! ✓');
+                    fileInput.value = '';
+                    document.getElementById('caption').value = '';
+                    document.getElementById('fileLabel').textContent = '📷 Fotoğraf veya Video Seç';
+                    loadFeed();
+                } else {
+                    alert('Yükleme başarısız!');
+                }
+            } catch (error) {
+                alert('Bağlantı hatası!');
+            }
+        }
+
+        async function loadFeed() {
+            try {
+                const response = await fetch(`${API_URL}/feed`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const feedDiv = document.getElementById('feed');
+                    
+                    if (data.posts.length === 0) {
+                        feedDiv.innerHTML = `
+                            <div class="empty-state">
+                                <h3>Henüz gönderi yok</h3>
+                                <p>İlk gönderiyi sen paylaş!</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    feedDiv.innerHTML = '';
+
+                    data.posts.forEach(post => {
+                        const postDiv = document.createElement('div');
+                        postDiv.className = 'post';
+                        
+                        const mediaTag = post.file_type === 'video' 
+                            ? `<video class="post-media" controls><source src="${post.url}"></video>`
+                            : `<img class="post-media" src="${post.url}" alt="Post">`;
+
+                        postDiv.innerHTML = `
+                            <div class="post-header">
+                                <span class="post-user">${post.email}</span>
+                                ${post.is_owner ? `<button class="delete-btn" onclick="deletePost('${post.id}')">Sil</button>` : ''}
+                            </div>
+                            ${mediaTag}
+                            ${post.caption ? `<div class="post-caption"><span class="username">${post.email}</span>${post.caption}</div>` : ''}
+                        `;
+                        feedDiv.appendChild(postDiv);
+                    });
+                }
+            } catch (error) {
+                console.error('Feed yüklenemedi:', error);
+            }
+        }
+
+        async function deletePost(postId) {
+            if (!confirm('Bu gönderiyi silmek istediğinize emin misiniz?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    loadFeed();
+                } else {
+                    alert('Silme başarısız!');
+                }
+            } catch (error) {
+                alert('Bağlantı hatası!');
+            }
+        }
+    </script>
+</body>
+</html>
