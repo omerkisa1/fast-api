@@ -81,3 +81,19 @@ async def get_feed(
             }
         )
     return {"posts": posts_data}
+@app.delete("/post/{post_id}")
+async def delete_post(post_id = str, db: AsyncSession = Depends(get_async_session)):
+    try:
+        post_uuid = uuid.UUID(post_id)
+
+        result = await db.execute(select(Post).where(Post.id == post_uuid))
+        post = result.scalars().first()
+
+        if not post:
+            raise HTTPException(status_code=404, detail="Post not found")
+        await db.delete(post)
+        await db.commit()
+
+        return {"success": True, "message": "Post deleted succesfully"}
+    except Exception as error:
+        raise HTTPException(status_code=500, detail= str(error))
